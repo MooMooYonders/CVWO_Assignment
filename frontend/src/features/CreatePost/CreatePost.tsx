@@ -3,17 +3,14 @@ import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import { dbApi, useCreatePostMutation, useCreatePostTagsMutation, useCreateTagsMutation, useLazyGetPageQuery, useLazyGetTagsByPageQuery } from "../../api/apiSlice";
 import { useNavigate, useParams } from "react-router-dom";
 import { selectName } from "../auth/authSlice";
-import CreateTag from "./CreateTag/CreateTag";
-import Tag from "../Tag/Tag";
 import { Alert, Autocomplete, Box, Button, Paper, Snackbar, TextField, ToggleButton, ToggleButtonGroup, Typography } from "@mui/material";
-import TextFieldsIcon from '@mui/icons-material/TextFieldsSharp';
-import ImageIcon from '@mui/icons-material/ImageSharp';
+
 
 
 const CreatePost: React.FC = () => {
     const [title, setTitle] = useState("");
     const [content, setContent] = useState("");
-    const [createPost, {isLoading, isError, error}] = useCreatePostMutation();
+    const [createPost] = useCreatePostMutation();
     const [tagerrmsg, setTagErrmsg] = useState("");
     const [posterrmsg, setPostErrmsg] = useState("");
     const [posttagerrmsg, setPostTagErrmsg] = useState("");

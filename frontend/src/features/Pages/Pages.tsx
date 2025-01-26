@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react"
-import { Outlet, useLocation, useNavigate, useParams } from "react-router-dom";
-import { useGetPopularTagsByPageQuery, useGetPostsByTagsAscMutation, useGetPostsByTagsDescMutation, useGetTagsLikeNameAndByPageMutation, useLazyGetPagePostsAscQuery, useLazyGetPagePostsDescQuery, useLazyGetPageQuery, useLazyGetPopularTagsByPageQuery, useLazyGetPostsLikeTitleAscQuery, useLazyGetPostsLikeTitleDescQuery, useLazyGetTagsByPageQuery} from "../../api/apiSlice";
-import { TextField, Chip, Button, Menu, MenuItem, Popover, List, ListItem, Autocomplete, Stack, ToggleButtonGroup, ToggleButton, Box, Typography, Paper, SelectChangeEvent, ThemeProvider } from "@mui/material";
-import { blue, grey } from "@mui/material/colors";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useGetPostsByTagsAscMutation, useGetPostsByTagsDescMutation, useLazyGetPagePostsAscQuery, useLazyGetPagePostsDescQuery, useLazyGetPopularTagsByPageQuery, useLazyGetPostsLikeTitleAscQuery, useLazyGetPostsLikeTitleDescQuery, useLazyGetTagsByPageQuery} from "../../api/apiSlice";
+import { TextField, Button, Autocomplete, ToggleButtonGroup, ToggleButton, Box, Typography, Paper, SelectChangeEvent, ThemeProvider } from "@mui/material";
 import Post from "./Post/Post";
 import Filter from "../Filter/Filter";
 import Tag from "../Tag/Tag";
@@ -71,7 +70,7 @@ const Pages: React.FC = () => {
             console.log(errmsg);
         }
     } 
-    // getpageposts, getpostsliketitle, getpostsbytag
+    
     const handlegetpageposts = async (order: string) => {
         try {
             let res;
@@ -81,7 +80,7 @@ const Pages: React.FC = () => {
                 res = await getPagePostsAsc(pagename).unwrap();
             }
             setPosts(res);
-            setTitleOptions(res.map((post: Post) => post.title));
+            setTitleOptions(res.length <= 0 ? []:res.map((post: Post) => post.title));
         } catch (err) {
             console.log((err as Error).message);
         }
@@ -181,7 +180,7 @@ const Pages: React.FC = () => {
    const getTags = async () => {
         try {
             const tags = await getTagsByPage(pagename).unwrap();
-            setTagOptions(tags); 
+            setTagOptions(tags == null ? [] : tags); 
         } catch (err) {
             console.log((err as Error).message);
         }
@@ -232,7 +231,7 @@ const Pages: React.FC = () => {
                 minHeight: "100%",
                 justifyContent: "center",
                 backgroundColor: theme.palette.background.default,
-                color: "white", // Ensures default text color is visible
+                color: "white", 
                 }}
             >
                 <Box

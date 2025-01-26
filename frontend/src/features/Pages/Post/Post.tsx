@@ -1,11 +1,9 @@
 import React, { useEffect, useState } from "react"
-import { useGetTagsByPostIdQuery, useLazyGetTagsByPostIdQuery, useLazyGetUnreadCommentsByPostIDQuery, useUpdateCommentsUserLastSeenMutation, useUpdateLastSeenMutation } from "../../../api/apiSlice";
+import { useLazyGetTagsByPostIdQuery, useLazyGetUnreadCommentsByPostIDQuery } from "../../../api/apiSlice";
 import { useNavigate, useParams } from "react-router-dom";
-import { Badge, Box, Chip, IconButton, Paper, ThemeProvider, Typography } from "@mui/material";
+import { Badge, Box, Paper, ThemeProvider, Typography } from "@mui/material";
 import Tag from "../../Tag/Tag";
-import AlternateEmailIcon from '@mui/icons-material/AlternateEmail';
 import theme from "../../Theme/Theme";
-import { Palette } from "@mui/icons-material";
 import { timeBefore } from "../../../Functions/Functions";
 
 type PostProps = {

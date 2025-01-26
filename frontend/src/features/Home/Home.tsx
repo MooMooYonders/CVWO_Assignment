@@ -4,34 +4,6 @@ import { useEffect, useState } from "react";
 import { useUpdateCommentsUserLastSeenMutation } from "../../api/apiSlice";
 import { Box, createTheme, ThemeProvider } from "@mui/material";
 
-/*
-const theme = createTheme({
-  palette: {
-    mode: 'light',
-    primary: {
-      main: '#48b5a3',
-    },
-    secondary: {
-      main: '#3a56d2',
-    },
-    error: {
-      main: '#ea2727',
-    },
-    background: {
-      default: '#d8f1ee',
-      paper: '#f9fbfa',
-    },
-    text: {
-      primary: 'rgba(0,0,0,0.87)',
-    },
-    divider: 'rgba(251,248,248,0.12)',
-  },
-  typography: {
-    fontSize: 13,
-  },
-}
-);
-*/
 
 const theme = createTheme({
   palette: {

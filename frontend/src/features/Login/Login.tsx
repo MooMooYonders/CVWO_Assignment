@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useCreateUserMutation, useGetPagesQuery, useGetUserQuery, useLazyGetUserQuery } from "../../api/apiSlice";
+import { useLazyGetUserQuery } from "../../api/apiSlice";
 import { changeAuth, changeName, selectAuth } from "../auth/authSlice";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import { Outlet, useNavigate } from "react-router-dom";

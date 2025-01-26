@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useCreateUserMutation, useLazyGetUserQuery } from "../../api/apiSlice";
 import { useNavigate } from "react-router-dom";
 import { Alert, Box, Button, IconButton, Paper, TextField, Typography } from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
 
 const CreateUser = () => {
-    const [createUser, {isLoading, isError, error}] = useCreateUserMutation();
+    const [createUser] = useCreateUserMutation();
     const [getUser] = useLazyGetUserQuery();
     const [username, setUsername] = useState("");
     const [created, setCreated] = useState(false);

@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { dbApi, useCreateCommentMutation, useGetPostByPostIDQuery, useUpdateCommentsUserLastSeenMutation, useUpdateLastSeenMutation } from "../../../api/apiSlice";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { useAppDispatch, useAppSelector } from "../../../app/hooks";
+import { useCreateCommentMutation, useGetPostByPostIDQuery, useUpdateCommentsUserLastSeenMutation, useUpdateLastSeenMutation } from "../../../api/apiSlice";
+import { useParams } from "react-router-dom";
+import { useAppSelector } from "../../../app/hooks";
 import { selectName } from "../../auth/authSlice";
 import { Box, Button, Paper, TextField, ThemeProvider } from "@mui/material";
 import theme from "../../Theme/Theme";
@@ -14,7 +14,7 @@ type CreateCommentProps = {
 }
 
 const CreateComment: React.FC<CreateCommentProps> = ({ isReply, reply_id, handleCloseReply, handleSubmitComment }) => {
-    const [createComment, {isLoading, isError}] = useCreateCommentMutation();
+    const [createComment] = useCreateCommentMutation();
     const [comment, setComment] = useState("");
     const username = useAppSelector(selectName);
     const [errmsg, setErrmsg] = useState("");

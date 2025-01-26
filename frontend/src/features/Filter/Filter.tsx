@@ -36,8 +36,8 @@ const Filter: React.FC<FilterProps> = ({value, handleChange, options}) => {
                     backgroundColor: "white"
                 }}
             >
-                {options.map((option: string) => (
-                    <MenuItem value={option}>{option}</MenuItem>
+                {options.map((option: string, index: number) => (
+                    <MenuItem key={index} value={option}>{option}</MenuItem>
                 ))}
             </Select>
         </FormControl>

@@ -1,4 +1,4 @@
-import { Box, Button, Icon, Paper, ThemeProvider, Typography } from "@mui/material";
+import { Box, Paper, ThemeProvider, Typography } from "@mui/material";
 import { useLazyGetPagesQuery } from "../../api/apiSlice";
 import theme from "../Theme/Theme";
 import { useNavigate } from "react-router-dom";

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useGetCommentByIDQuery, useLazyGetCommentByIDQuery } from "../../../api/apiSlice";
+import { useLazyGetCommentByIDQuery } from "../../../api/apiSlice";
 import { useNavigate, useParams } from "react-router-dom";
 import { Box, Button, Paper, ThemeProvider, Typography } from "@mui/material";
 import CreateComment from "../CreateComment/CreateComment";
@@ -26,8 +26,6 @@ type CommentProps = {
 
 const Comment: React.FC<CommentProps> = ({id, created_at, updated_at, username, content, reply_to, handleSubmitComment}) => {
     const [getComment, {data, isLoading, isError}] = useLazyGetCommentByIDQuery();
-    const {pagename, post_id} = useParams<{pagename: string, post_id: string}>();
-    const navigate = useNavigate();
     const [openReply, setopenReply] = useState(false);
     
     useEffect(() => {

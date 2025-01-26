@@ -1,8 +1,8 @@
-import { NavLink, Outlet, useLocation, useNavigate, useParams } from "react-router-dom";
-import { useGetCommentByIDQuery, useGetCommentsByPostIDQuery, useGetPostByPostIDQuery, useGetTagsByPostIdQuery, useLazyGetCommentsByPostIDQuery, useLazyGetReadCommentsByPostIDQuery, useLazyGetUnreadCommentsByPostIDQuery, useUpdateCommentsUserLastSeenMutation } from "../../api/apiSlice";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useGetPostByPostIDQuery, useGetTagsByPostIdQuery, useLazyGetCommentsByPostIDQuery, useLazyGetReadCommentsByPostIDQuery, useLazyGetUnreadCommentsByPostIDQuery, useUpdateCommentsUserLastSeenMutation } from "../../api/apiSlice";
 import Comment from "./Comment/Comment";
 import { useEffect, useState } from "react";
-import { Box, Button, Typography, Paper, Chip, IconButton, ThemeProvider } from "@mui/material";
+import { Box, Typography, Paper, IconButton, ThemeProvider } from "@mui/material";
 import Tag from "../Tag/Tag";
 import Divider from '@mui/material/Divider';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';

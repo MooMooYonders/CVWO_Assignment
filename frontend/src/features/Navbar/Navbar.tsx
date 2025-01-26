@@ -1,7 +1,6 @@
 import React, { useState } from "react";
-import { Link, NavLink, useNavigate } from "react-router-dom";
-import { useCreatePageMutation, useGetPagesQuery } from "../../api/apiSlice";
-import Pages from "../Pages/Pages";
+import { useNavigate } from "react-router-dom";
+import { useGetPagesQuery } from "../../api/apiSlice";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import { changeAuth, changeName, selectName } from "../auth/authSlice";
 import {AppBar, Toolbar, IconButton, Typography, Drawer, List, ListItem, ListItemIcon, ListItemText, Divider, Box, Menu, ListItemButton, ThemeProvider} from "@mui/material";

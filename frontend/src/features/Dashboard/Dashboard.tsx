@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { useAppSelector } from "../../app/hooks";
 import { selectName } from "../auth/authSlice";
-import { useGetPagesQuery, useGetUserPostsByPagenameMutation, useLazyGetLastSeenQuery, useLazyGetUnreadCommentsByPostIDQuery, useLazyGetUserPostsAscQuery, useLazyGetUserPostsByNotificationsQuery, useLazyGetUserPostsDescQuery, useUpdateLastSeenMutation } from "../../api/apiSlice";
-import { Autocomplete, Box, Button, FormControl, InputLabel, MenuItem, Paper, Select, TextField, Typography, SelectChangeEvent, ThemeProvider } from "@mui/material";
+import { useGetPagesQuery, useGetUserPostsByPagenameMutation, useLazyGetUserPostsAscQuery, useLazyGetUserPostsByNotificationsQuery, useLazyGetUserPostsDescQuery} from "../../api/apiSlice";
+import { Box, Paper, Typography, SelectChangeEvent, ThemeProvider } from "@mui/material";
 import Post from "../Pages/Post/Post";
 import Filter from "../Filter/Filter";
 import theme from "../Theme/Theme";
@@ -53,11 +53,10 @@ const Dashboard: React.FC = () => {
     const [posts, setPosts] = useState<Post[]>([]);
     const [getUserPostsByPagename] = useGetUserPostsByPagenameMutation();
     const [getUserPostsOrderedByNotifications] = useLazyGetUserPostsByNotificationsQuery();
-    const {data, isLoading, isError} = useGetPagesQuery(undefined);
+    const {data} = useGetPagesQuery(undefined);
     const [filter, setFilter] = useState("Newest")
     const [notifposts, setNotifPosts] = useState<NotifPost[]>([]);
     const [filteroptions, setFilterOptions] = useState<string[]>([]);
-    const [filtervalue, setFilterValue] = useState("")
     
     const handleGetUserPosts = async (filter: string) => {
 
