@@ -28,6 +28,12 @@ func (apiCfg apiConfig) handleCreatePage(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
+	pageinfo, err := apiCfg.DB.GetPage(r.Context(), params.Name)
+	if err == nil {
+		respondWithError(w, 400, fmt.Sprintf("Cannot use repeated name: %v", pageinfo.Name))
+		return
+	}
+
 	page, err := apiCfg.DB.CreatePage(r.Context(), database.CreatePageParams{
 		ID:        uuid.New(),
 		CreatedAt: time.Now().UTC(),

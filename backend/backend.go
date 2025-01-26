@@ -43,7 +43,7 @@ func main() {
 	router := chi.NewRouter()
 
 	router.Use(cors.Handler(cors.Options{
-		AllowedOrigins:   []string{"https://*", "http://*"},
+		AllowedOrigins:   []string{"http://localhost:5173"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"*"},
 		ExposedHeaders:   []string{"Link"},
@@ -51,25 +51,57 @@ func main() {
 		MaxAge:           300,
 	}))
 
-	//users
+	//USERS
 	router.Post("/users", apiCfg.handlerCreateUser)
 	router.Get("/users/{username}", apiCfg.handleGetUser)
+	router.Patch("/users/{username}", apiCfg.handleUpdateLastSeen)
+	router.Get("/users/last_seen/{username}", apiCfg.handleGetLastSeen)
 
-	//Pages
+	//PAGES
 	router.Post("/pages", apiCfg.handleCreatePage)
 	router.Get("/pages", apiCfg.handleGetPages)
 	router.Get("/pages/{pagename}", apiCfg.handleGetPage)
 
-	//Posts
-	router.Get("/posts/page/{pagename}", apiCfg.handleGetPagePosts)
-	router.Get("/posts/user/{username}", apiCfg.handleGetUserPosts)
+	//POSTS
+	// posts by page
+	router.Get("/posts/page/{pagename}/asc", apiCfg.handleGetPagePostsAsc)
+	router.Get("/posts/page/{pagename}/desc", apiCfg.handleGetPagePostsDesc)
+
+	// user posts
+	router.Get("/posts/user/{username}/asc", apiCfg.handleGetUserPostsAsc)
+	router.Get("/posts/user/{username}/desc", apiCfg.handleGetUserPostsDesc)
+
 	router.Post("/posts", apiCfg.handleCreatePost)
+	router.Get("/posts/{post_id}", apiCfg.handleGetPostByPostID)
 
-	//Tags
+	// posts like title
+	router.Post("/posts/page/title/asc", apiCfg.handleGetPostsLikeTitleAsc)
+	router.Post("/posts/page/title/desc", apiCfg.handleGetPostsLikeTitleDesc)
+
+	//posts by tags
+	router.Post("/posts/page/tags/asc", apiCfg.handleGetPostsByTagsAsc)
+	router.Post("/posts/page/tags/desc", apiCfg.handleGetPostsByTagsDesc)
+
+	router.Post("/posts/user/pagename", apiCfg.handleGetUserPostsByPagename)
+	router.Get("/posts/user/{username}/notifications", apiCfg.handleGetUserPostsOrderedByNotifications)
+
+	//TAGS
 	router.Post("/tags", apiCfg.handleCreateTag)
+	router.Get("/tags/{post_id}", apiCfg.handleGetPostTagsByPostID)
+	router.Post("/tags/name/page", apiCfg.handleGetTagsLikeNameAndByPage)
+	router.Get("/tags/page/{pagename}", apiCfg.handleGetTagsByPage)
+	router.Get("/tags/page/{pagename}/popular", apiCfg.handleGetPopularTagsByPage)
 
-	//PostTags
-	router.Post("/post_tag", apiCfg.handleCreatePostTag)
+	//POSTTAGS
+	router.Post("/post_tags", apiCfg.handleCreatePostTag)
+
+	//COMMENTS
+	router.Post("/comments", apiCfg.handleCreateComment)
+	router.Get("/comments/post/{post_id}", apiCfg.handleGetCommentsByPostID)
+	router.Get("/comments/comment/{comment_id}", apiCfg.handleGetCommentByID)
+	router.Get("/comments/unread/{post_id}", apiCfg.handleGetUnreadCommentsByPostID)
+	router.Get("/comments/read/{post_id}", apiCfg.handleGetReadCommentsByPostID)
+	router.Put("/comments/user_last_seen/{post_id}", apiCfg.handleUpdateCommentsUserLastSeen)
 
 	srv := &http.Server{
 		Handler: router,

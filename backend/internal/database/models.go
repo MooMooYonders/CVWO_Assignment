@@ -11,6 +11,17 @@ import (
 	"github.com/google/uuid"
 )
 
+type Comment struct {
+	ID           int32
+	PostID       uuid.NullUUID
+	CreatedAt    time.Time
+	UpdatedAt    time.Time
+	Username     string
+	Content      string
+	ReplyTo      sql.NullInt32
+	UserLastSeen time.Time
+}
+
 type Page struct {
 	ID        uuid.UUID
 	CreatedAt time.Time
@@ -42,5 +53,6 @@ type User struct {
 	ID        uuid.UUID
 	CreatedAt time.Time
 	UpdatedAt time.Time
+	LastSeen  time.Time
 	Name      string
 }

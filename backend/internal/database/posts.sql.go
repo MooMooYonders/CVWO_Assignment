@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 )
 
 const createPost = `-- name: CreatePost :one
@@ -52,12 +53,13 @@ func (q *Queries) CreatePost(ctx context.Context, arg CreatePostParams) (Post, e
 	return i, err
 }
 
-const getPagePosts = `-- name: GetPagePosts :many
+const getPagePostsAsc = `-- name: GetPagePostsAsc :many
 SELECT id, created_at, updated_at, title, content, pagename, username FROM posts where posts.pagename = $1
+ORDER BY posts.created_at ASC
 `
 
-func (q *Queries) GetPagePosts(ctx context.Context, pagename sql.NullString) ([]Post, error) {
-	rows, err := q.db.QueryContext(ctx, getPagePosts, pagename)
+func (q *Queries) GetPagePostsAsc(ctx context.Context, pagename sql.NullString) ([]Post, error) {
+	rows, err := q.db.QueryContext(ctx, getPagePostsAsc, pagename)
 	if err != nil {
 		return nil, err
 	}
@@ -87,12 +89,13 @@ func (q *Queries) GetPagePosts(ctx context.Context, pagename sql.NullString) ([]
 	return items, nil
 }
 
-const getUserPosts = `-- name: GetUserPosts :many
-SELECT id, created_at, updated_at, title, content, pagename, username FROM posts where posts.username = $1
+const getPagePostsDesc = `-- name: GetPagePostsDesc :many
+SELECT id, created_at, updated_at, title, content, pagename, username FROM posts where posts.pagename = $1
+ORDER BY posts.created_at DESC
 `
 
-func (q *Queries) GetUserPosts(ctx context.Context, username string) ([]Post, error) {
-	rows, err := q.db.QueryContext(ctx, getUserPosts, username)
+func (q *Queries) GetPagePostsDesc(ctx context.Context, pagename sql.NullString) ([]Post, error) {
+	rows, err := q.db.QueryContext(ctx, getPagePostsDesc, pagename)
 	if err != nil {
 		return nil, err
 	}
@@ -108,6 +111,390 @@ func (q *Queries) GetUserPosts(ctx context.Context, username string) ([]Post, er
 			&i.Content,
 			&i.Pagename,
 			&i.Username,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getPostByPostID = `-- name: GetPostByPostID :one
+SELECT id, created_at, updated_at, title, content, pagename, username FROM posts where posts.id = $1
+`
+
+func (q *Queries) GetPostByPostID(ctx context.Context, id uuid.UUID) (Post, error) {
+	row := q.db.QueryRowContext(ctx, getPostByPostID, id)
+	var i Post
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Title,
+		&i.Content,
+		&i.Pagename,
+		&i.Username,
+	)
+	return i, err
+}
+
+const getPostsByTagsAsc = `-- name: GetPostsByTagsAsc :many
+SELECT id, created_at, updated_at, title, content, pagename, username FROM posts 
+WHERE posts.id IN (
+    SELECT posts.id 
+    FROM posts 
+    JOIN post_tags 
+    ON posts.id = post_tags.post_id
+    JOIN tags 
+    ON post_tags.tag_id = tags.id
+    WHERE posts.pagename = $1
+    AND tags.name = ANY($2::text[])
+    GROUP BY posts.id
+    HAVING COUNT(DISTINCT tags.name) = array_length($2, 1)
+)
+ORDER BY posts.created_at ASC
+LIMIT 10
+`
+
+type GetPostsByTagsAscParams struct {
+	Pagename sql.NullString
+	Column2  []string
+}
+
+func (q *Queries) GetPostsByTagsAsc(ctx context.Context, arg GetPostsByTagsAscParams) ([]Post, error) {
+	rows, err := q.db.QueryContext(ctx, getPostsByTagsAsc, arg.Pagename, pq.Array(arg.Column2))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Post
+	for rows.Next() {
+		var i Post
+		if err := rows.Scan(
+			&i.ID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Title,
+			&i.Content,
+			&i.Pagename,
+			&i.Username,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getPostsByTagsDesc = `-- name: GetPostsByTagsDesc :many
+SELECT id, created_at, updated_at, title, content, pagename, username FROM posts 
+WHERE posts.id IN (
+    SELECT posts.id 
+    FROM posts 
+    JOIN post_tags 
+    ON posts.id = post_tags.post_id
+    JOIN tags 
+    ON post_tags.tag_id = tags.id
+    WHERE posts.pagename = $1
+    AND tags.name = ANY($2::text[])
+    GROUP BY posts.id
+    HAVING COUNT(DISTINCT tags.name) = array_length($2, 1)
+)
+ORDER BY posts.created_at DESC
+LIMIT 10
+`
+
+type GetPostsByTagsDescParams struct {
+	Pagename sql.NullString
+	Column2  []string
+}
+
+func (q *Queries) GetPostsByTagsDesc(ctx context.Context, arg GetPostsByTagsDescParams) ([]Post, error) {
+	rows, err := q.db.QueryContext(ctx, getPostsByTagsDesc, arg.Pagename, pq.Array(arg.Column2))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Post
+	for rows.Next() {
+		var i Post
+		if err := rows.Scan(
+			&i.ID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Title,
+			&i.Content,
+			&i.Pagename,
+			&i.Username,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getPostsLikeTitleAsc = `-- name: GetPostsLikeTitleAsc :many
+SELECT id, created_at, updated_at, title, content, pagename, username FROM posts
+WHERE posts.pagename = $1
+AND posts.title LIKE $2 || '%'
+ORDER BY posts.created_at ASC
+LIMIT 10
+`
+
+type GetPostsLikeTitleAscParams struct {
+	Pagename sql.NullString
+	Column2  sql.NullString
+}
+
+func (q *Queries) GetPostsLikeTitleAsc(ctx context.Context, arg GetPostsLikeTitleAscParams) ([]Post, error) {
+	rows, err := q.db.QueryContext(ctx, getPostsLikeTitleAsc, arg.Pagename, arg.Column2)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Post
+	for rows.Next() {
+		var i Post
+		if err := rows.Scan(
+			&i.ID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Title,
+			&i.Content,
+			&i.Pagename,
+			&i.Username,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getPostsLikeTitleDesc = `-- name: GetPostsLikeTitleDesc :many
+SELECT id, created_at, updated_at, title, content, pagename, username FROM posts
+WHERE posts.pagename = $1
+AND posts.title LIKE $2 || '%'
+ORDER BY posts.created_at DESC
+LIMIT 10
+`
+
+type GetPostsLikeTitleDescParams struct {
+	Pagename sql.NullString
+	Column2  sql.NullString
+}
+
+func (q *Queries) GetPostsLikeTitleDesc(ctx context.Context, arg GetPostsLikeTitleDescParams) ([]Post, error) {
+	rows, err := q.db.QueryContext(ctx, getPostsLikeTitleDesc, arg.Pagename, arg.Column2)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Post
+	for rows.Next() {
+		var i Post
+		if err := rows.Scan(
+			&i.ID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Title,
+			&i.Content,
+			&i.Pagename,
+			&i.Username,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getUserPostsAsc = `-- name: GetUserPostsAsc :many
+SELECT id, created_at, updated_at, title, content, pagename, username FROM posts where posts.username = $1
+ORDER BY posts.created_at ASC
+`
+
+func (q *Queries) GetUserPostsAsc(ctx context.Context, username string) ([]Post, error) {
+	rows, err := q.db.QueryContext(ctx, getUserPostsAsc, username)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Post
+	for rows.Next() {
+		var i Post
+		if err := rows.Scan(
+			&i.ID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Title,
+			&i.Content,
+			&i.Pagename,
+			&i.Username,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getUserPostsByPagename = `-- name: GetUserPostsByPagename :many
+SELECT id, created_at, updated_at, title, content, pagename, username FROM posts WHERE posts.username = $1
+AND pagename = $2
+ORDER BY posts.created_at ASC
+`
+
+type GetUserPostsByPagenameParams struct {
+	Username string
+	Pagename sql.NullString
+}
+
+func (q *Queries) GetUserPostsByPagename(ctx context.Context, arg GetUserPostsByPagenameParams) ([]Post, error) {
+	rows, err := q.db.QueryContext(ctx, getUserPostsByPagename, arg.Username, arg.Pagename)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Post
+	for rows.Next() {
+		var i Post
+		if err := rows.Scan(
+			&i.ID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Title,
+			&i.Content,
+			&i.Pagename,
+			&i.Username,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getUserPostsDesc = `-- name: GetUserPostsDesc :many
+SELECT id, created_at, updated_at, title, content, pagename, username FROM posts where posts.username = $1
+ORDER BY posts.created_at DESC
+`
+
+func (q *Queries) GetUserPostsDesc(ctx context.Context, username string) ([]Post, error) {
+	rows, err := q.db.QueryContext(ctx, getUserPostsDesc, username)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Post
+	for rows.Next() {
+		var i Post
+		if err := rows.Scan(
+			&i.ID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Title,
+			&i.Content,
+			&i.Pagename,
+			&i.Username,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getUserPostsOrderedByNotifications = `-- name: GetUserPostsOrderedByNotifications :many
+SELECT posts.id, posts.created_at, posts.updated_at, posts.title, posts.content, posts.pagename, posts.username, COUNT(comments.id) as unread_comments_count
+FROM posts
+JOIN comments 
+ON posts.id = comments.post_id
+WHERE posts.username = $1
+AND comments.created_at > comments.user_last_seen
+GROUP BY posts.id
+ORDER BY unread_comments_count DESC
+LIMIT 3
+`
+
+type GetUserPostsOrderedByNotificationsRow struct {
+	ID                  uuid.UUID
+	CreatedAt           time.Time
+	UpdatedAt           time.Time
+	Title               string
+	Content             string
+	Pagename            sql.NullString
+	Username            string
+	UnreadCommentsCount int64
+}
+
+func (q *Queries) GetUserPostsOrderedByNotifications(ctx context.Context, username string) ([]GetUserPostsOrderedByNotificationsRow, error) {
+	rows, err := q.db.QueryContext(ctx, getUserPostsOrderedByNotifications, username)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetUserPostsOrderedByNotificationsRow
+	for rows.Next() {
+		var i GetUserPostsOrderedByNotificationsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Title,
+			&i.Content,
+			&i.Pagename,
+			&i.Username,
+			&i.UnreadCommentsCount,
 		); err != nil {
 			return nil, err
 		}

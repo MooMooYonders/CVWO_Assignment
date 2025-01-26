@@ -7,6 +7,7 @@ package database
 
 import (
 	"context"
+	"database/sql"
 )
 
 const createTag = `-- name: CreateTag :one
@@ -31,6 +32,48 @@ func (q *Queries) CreateTag(ctx context.Context, name string) (CreateTagRow, err
 	var i CreateTagRow
 	err := row.Scan(&i.ID, &i.Name)
 	return i, err
+}
+
+const getPopularPageTags = `-- name: GetPopularPageTags :many
+SELECT tags.id, tags.name, COUNT(posts.id) as tagcount
+FROM tags
+JOIN post_tags
+ON tags.id = post_tags.tag_id
+JOIN posts
+ON posts.id = post_tags.post_id
+WHERE posts.pagename = $1
+GROUP BY tags.id
+ORDER BY tagcount DESC
+limit 6
+`
+
+type GetPopularPageTagsRow struct {
+	ID       int32
+	Name     string
+	Tagcount int64
+}
+
+func (q *Queries) GetPopularPageTags(ctx context.Context, pagename sql.NullString) ([]GetPopularPageTagsRow, error) {
+	rows, err := q.db.QueryContext(ctx, getPopularPageTags, pagename)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetPopularPageTagsRow
+	for rows.Next() {
+		var i GetPopularPageTagsRow
+		if err := rows.Scan(&i.ID, &i.Name, &i.Tagcount); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getTagsById = `-- name: GetTagsById :many
@@ -77,6 +120,78 @@ func (q *Queries) GetTagsByName(ctx context.Context, name string) ([]Tag, error)
 			return nil, err
 		}
 		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getTagsByPage = `-- name: GetTagsByPage :many
+SELECT DISTINCT tags.name
+FROM posts JOIN post_tags 
+ON posts.id = post_tags.post_id
+JOIN tags 
+ON post_tags.tag_id = tags.id
+WHERE pagename = $1
+`
+
+func (q *Queries) GetTagsByPage(ctx context.Context, pagename sql.NullString) ([]string, error) {
+	rows, err := q.db.QueryContext(ctx, getTagsByPage, pagename)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []string
+	for rows.Next() {
+		var name string
+		if err := rows.Scan(&name); err != nil {
+			return nil, err
+		}
+		items = append(items, name)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getTagsLikeNameAndByPage = `-- name: GetTagsLikeNameAndByPage :many
+SELECT DISTINCT tags.name 
+FROM posts 
+JOIN post_tags 
+ON posts.id = post_tags.post_id
+JOIN tags 
+ON post_tags.tag_id = tags.id
+WHERE pagename = $1
+AND tags.name LIKE $2 || '%'
+LIMIT 10
+`
+
+type GetTagsLikeNameAndByPageParams struct {
+	Pagename sql.NullString
+	Column2  sql.NullString
+}
+
+func (q *Queries) GetTagsLikeNameAndByPage(ctx context.Context, arg GetTagsLikeNameAndByPageParams) ([]string, error) {
+	rows, err := q.db.QueryContext(ctx, getTagsLikeNameAndByPage, arg.Pagename, arg.Column2)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []string
+	for rows.Next() {
+		var name string
+		if err := rows.Scan(&name); err != nil {
+			return nil, err
+		}
+		items = append(items, name)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err

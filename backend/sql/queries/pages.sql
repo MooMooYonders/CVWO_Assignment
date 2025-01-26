@@ -9,3 +9,4 @@ SELECT * FROM pages;
 
 -- name: GetPage :one
 SELECT * FROM pages where pages.name = $1;
+

@@ -13,15 +13,16 @@ import (
 )
 
 const createUser = `-- name: CreateUser :one
-INSERT INTO users (id, created_at, updated_at, name) 
-VALUES ($1, $2, $3, $4)
-RETURNING id, created_at, updated_at, name
+INSERT INTO users (id, created_at, updated_at, last_seen, name) 
+VALUES ($1, $2, $3, $4, $5)
+RETURNING id, created_at, updated_at, last_seen, name
 `
 
 type CreateUserParams struct {
 	ID        uuid.UUID
 	CreatedAt time.Time
 	UpdatedAt time.Time
+	LastSeen  time.Time
 	Name      string
 }
 
@@ -30,6 +31,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		arg.ID,
 		arg.CreatedAt,
 		arg.UpdatedAt,
+		arg.LastSeen,
 		arg.Name,
 	)
 	var i User
@@ -37,9 +39,23 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.ID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.LastSeen,
 		&i.Name,
 	)
 	return i, err
+}
+
+const getLastSeen = `-- name: GetLastSeen :one
+SELECT users.last_seen 
+FROM users 
+WHERE users.name = $1
+`
+
+func (q *Queries) GetLastSeen(ctx context.Context, name string) (time.Time, error) {
+	row := q.db.QueryRowContext(ctx, getLastSeen, name)
+	var last_seen time.Time
+	err := row.Scan(&last_seen)
+	return last_seen, err
 }
 
 const getUser = `-- name: GetUser :one
@@ -50,4 +66,20 @@ func (q *Queries) GetUser(ctx context.Context, name string) (string, error) {
 	row := q.db.QueryRowContext(ctx, getUser, name)
 	err := row.Scan(&name)
 	return name, err
+}
+
+const updateLastSeen = `-- name: UpdateLastSeen :exec
+UPDATE users
+SET last_seen = $1
+WHERE name = $2
+`
+
+type UpdateLastSeenParams struct {
+	LastSeen time.Time
+	Name     string
+}
+
+func (q *Queries) UpdateLastSeen(ctx context.Context, arg UpdateLastSeenParams) error {
+	_, err := q.db.ExecContext(ctx, updateLastSeen, arg.LastSeen, arg.Name)
+	return err
 }

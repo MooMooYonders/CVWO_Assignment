@@ -28,3 +28,32 @@ func (q *Queries) CreatePostTag(ctx context.Context, arg CreatePostTagParams) (P
 	err := row.Scan(&i.PostID, &i.TagID)
 	return i, err
 }
+
+const getPostTagsByPostID = `-- name: GetPostTagsByPostID :many
+SELECT tags.name FROM 
+post_tags JOIN tags on post_tags.tag_id = tags.id 
+WHERE post_tags.post_id = $1
+`
+
+func (q *Queries) GetPostTagsByPostID(ctx context.Context, postID uuid.UUID) ([]string, error) {
+	rows, err := q.db.QueryContext(ctx, getPostTagsByPostID, postID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []string
+	for rows.Next() {
+		var name string
+		if err := rows.Scan(&name); err != nil {
+			return nil, err
+		}
+		items = append(items, name)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
