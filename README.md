@@ -1,5 +1,5 @@
 #My Project
-
+Chan Jin Kai
 ## Setup
 1. Make sure you have Go installed
 
