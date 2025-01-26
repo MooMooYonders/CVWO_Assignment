@@ -15,7 +15,7 @@
 
 6. Then navigate back to the backend directory and run 'go build'.
 
-7.A new file should appear in your backend folder and now run './{name of new file}'. This should start your backend server.
+7. A new file should appear in your backend folder and now run './{name of new file}'. This should start your backend server.
 
 8. Navigate to the frontend directory and set up a .env file with the information below:
     VITE_BASE_URL= http://localhost:{server port number}
